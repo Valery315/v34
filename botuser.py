@@ -474,9 +474,27 @@ REWARD_INTERVAL = 604800  # 1 неделя в секундах епта
 rewards_running = False
 last_distribution_time = 0
 
+ENABLE_REWARD_DISTRIBUTION = os.getenv("ENABLE_REWARD_DISTRIBUTION", "0") == "1"
+
+def _get_tg_user_id_by_lowid(lowID: int):
+    """Map game lowID -> Telegram user id (id_user) via users.db."""
+    try:
+        with sqlite3.connect('users.db') as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT id_user FROM accountconnect WHERE lowID = ?", (lowID,))
+            row = cur.fetchone()
+            return row[0] if row else None
+    except Exception as e:
+        logger.error(f"Error reading users.db mapping: {e}")
+        return None
+
 def distribute_rewards():
     global last_distribution_time
     while True:
+        if not ENABLE_REWARD_DISTRIBUTION:
+            time.sleep(5)
+            continue
+
         current_time = time.time()
         
         if current_time - last_distribution_time >= REWARD_INTERVAL:  # ну тут интервал
@@ -497,7 +515,9 @@ def distribute_rewards():
                             plr_conn.commit()
 
                             message = f"🎉 Вы получили награду: {gems} Гемов, {gold} Золота, {BPTOKEN} Токенов!"
-                            bot.send_message(lowID, message)
+                            tg_user_id = _get_tg_user_id_by_lowid(int(lowID))
+                            if tg_user_id:
+                                bot.send_message(tg_user_id, message)
                 admin_message = "Сервер был перезапущен/награда выдана!"
                 for admin_id in admins:
                     bot.send_message(admin_id, admin_message)
@@ -545,7 +565,9 @@ def immediate_distribution():
                     plr_conn.commit()
 
                     message = f"🎉 Вы получили награду: {gems} Гемов, {gold} Золота, {BPTOKEN} Токенов!"
-                    bot.send_message(lowID, message)
+                    tg_user_id = _get_tg_user_id_by_lowid(int(lowID))
+                    if tg_user_id:
+                        bot.send_message(tg_user_id, message)
 
     except Exception as e:
         logger.error(f"Error in immediate distribution: {e}")
