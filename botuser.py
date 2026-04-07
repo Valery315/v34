@@ -63,6 +63,7 @@ creator2 = {}
 creator3 = {}
  
 def init_db():
+    os.makedirs("database/Player", exist_ok=True)
     conn = sqlite3.connect('users.db')  # Название созданной бд
     cursor = conn.cursor()
     cursor.execute('''

@@ -2,17 +2,21 @@ import sqlite3
 from datetime import datetime, timedelta
 import time
 import json
+import os
 
 
 class AntiBot:
     def __init__(self):
         self.db_path = "database/Player/plr.db"
         self.club_db_path = "database/Club/clubs.db"
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        os.makedirs(os.path.dirname(self.club_db_path), exist_ok=True)
         self.create_free_ids_table()
     
     def create_account(self, name, ip_address):
         """Создаёт новый аккаунт, присваивая ему уникальный lowID."""
         try:
+            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
@@ -43,6 +47,7 @@ class AntiBot:
 
     def create_table_if_not_exists(self):
         """Создание таблицы, если она отсутствует."""
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
             c.execute("""
@@ -52,6 +57,7 @@ class AntiBot:
             
     def create_free_ids_table(self):
         """Создание таблицы для свободных lowID."""
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
             c.execute("""

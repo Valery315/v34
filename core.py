@@ -54,6 +54,7 @@ class Server:
         log_info("Заблокированные IP очищены в config.json при запуске сервера")
 
     def setup_database(self):
+        os.makedirs("database/Player", exist_ok=True)
         if os.path.exists("database/Player/plr.db"):
             with sqlite3.connect("database/Player/plr.db") as conn:
                 c = conn.cursor()
