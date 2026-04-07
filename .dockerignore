@@ -1,0 +1,22 @@
+.git
+.DS_Store
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local venv/vendor junk inside repo
+.local/
+.cache/
+
+# Local databases / logs (Railway disk is ephemeral unless you attach a volume)
+users.db
+database/**/*.db
+JSON/*.log
+JSON/ConnectedIP.json
+
+# Secrets
+.env
+.env.*
+

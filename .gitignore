@@ -1,0 +1,23 @@
+.DS_Store
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Local/vendor Python env accidentally committed
+.local/
+.cache/
+
+# Secrets
+.env
+.env.*
+
+# Databases & runtime logs
+users.db
+database/**/*.db
+database/**/*.sqlite*
+JSON/*.log
+JSON/ConnectedIP.json
+
+# Large binaries
+*.apk
+
