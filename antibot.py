@@ -11,6 +11,7 @@ class AntiBot:
         self.club_db_path = "database/Club/clubs.db"
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.club_db_path), exist_ok=True)
+        self.create_club_tables_if_not_exists()
         self.create_free_ids_table()
     
     def create_account(self, name, ip_address):
@@ -63,6 +64,29 @@ class AntiBot:
             c.execute("""
                 CREATE TABLE IF NOT EXISTS LowID (
                     lowID INT
+                )
+            """)
+            conn.commit()
+
+    def create_club_tables_if_not_exists(self):
+        """Ensure Club DB schema exists (Railway/clean volume friendly)."""
+        os.makedirs(os.path.dirname(self.club_db_path), exist_ok=True)
+        with sqlite3.connect(self.club_db_path) as conn:
+            c = conn.cursor()
+            # Keep schema aligned with database/DataBase.py createClub()
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS clubs (
+                    clubID INT,
+                    name TEXT,
+                    desc TEXT,
+                    region TEXT,
+                    badgeID INT,
+                    type INT,
+                    trophiesneeded INT,
+                    friendlyfamily INT,
+                    trophies INT,
+                    members JSON,
+                    notif JSON
                 )
             """)
             conn.commit()
@@ -176,6 +200,7 @@ class AntiBot:
     def delete_club_if_contains_deleted_account(self):
         """Удаляет клубы, если в них есть участники с удаленными аккаунтами."""
         try:
+            self.create_club_tables_if_not_exists()
             conn_players = sqlite3.connect(self.db_path)
             conn_clubs = sqlite3.connect(self.club_db_path)
             cursor_players = conn_players.cursor()
