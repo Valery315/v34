@@ -258,7 +258,7 @@ class OwnHomeDataMessage(Writer):
         self.writeInt(1) #// Notification Index
         self.writeBoolean(False) #// Read
         self.writeInt(0) # Time Ago
-        self.writeString(f"Твой айди:   <c8bfd28>{self.player.low_id}</c>\nТвой токен:   <c8bfd28>{self.player.token}</c> - Никому не показывай!\nТГК:   <c8bfd28>@MonraxBrawl</c>\nАдмины:   <c8bfd28>@Maxamed18</c>\nНаш оффицальный бот:   <c8bfd28>@NatsuBrawlCom_bot</c>")
+        self.writeString(f"Твой айди:   <c8bfd28>{self.player.low_id}</c>\nТвой токен:   <c8bfd28>{self.player.token}</c>\nСохрани эти данные и никому не передавай токен.")
         self.writeVint(1)#new notif
 
         if self.player.vip == 1:
@@ -354,17 +354,17 @@ class OwnHomeDataMessage(Writer):
         self.writeInt(0) # Notification Index 
         self.writeBoolean(False) # Notification Read
         self.writeInt(0) # Notification Time Ago
-        self.writeString("ZoxDev") # Notification Text 1
+        self.writeString("Система") # Notification Text 1
         self.writeInt(0)
         self.writeString("Добро пожаловать в Speed Brawl!") # Notification Text 2
         self.writeInt(0)
-        self.writeString("Поддержи наш проект купив гемы/випку!\nТакже заходи в наш тгк - @SpeedBrawlnw") # Notification Text 3
+        self.writeString("Аккаунт теперь восстанавливается автоматически по сохраненным данным клиента.") # Notification Text 3
         self.writeInt(0)
-        self.writeString("ТЕЛЕГРАМ")
-        self.writeString("/b2d704b22b95a4d70f66e89da867a64b")
-        self.writeString('3a35620676c1d08d12086257a5ae03eb612452d8')
-        self.writeString("brawlstars://extlink?page=https%3A%2F%2Ft.me%2Fspeedbrawlnw")
-        self.writeVint(3473)
+        self.writeString("")
+        self.writeString("")
+        self.writeString("")
+        self.writeString("")
+        self.writeVint(0)
 		
         self.writeVint(-1)
         self.writeBoolean(False)
@@ -476,7 +476,7 @@ class OwnHomeDataMessage(Writer):
             if self.player.low_id in settings['vips']:
                 DataBase.replaceValue(self, 'vip', 1)
         if self.player.low_id in settings['banID']:
-            update_url = 'https://t.me/zoxdev'
+            update_url = ''
             self.player.err_code = 11
-            LoginFailedMessage(self.client, self.player, 'Ваш аккаунт заблокирован!\nЕсли это ошибка - @ZoXDev').send()
+            LoginFailedMessage(self.client, self.player, 'Ваш аккаунт заблокирован.\nЕсли это ошибка, свяжитесь с владельцем сервера.').send()
         BattleBan(self.client, self.player)

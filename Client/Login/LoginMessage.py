@@ -43,8 +43,8 @@ class LoginMessage(BSMessageReader):
     def process(self):
         if self.major != 29 or self.major >= 35:
             self.player.err_code = 8
-            self.player.update_url = 't.me/Maxamed18'
-            LoginFailedMessage(self.client, self.player, f"Отличные новости! Доступна новая версия MonraxBrawl. Чтобы сыграть в приватный сервер купите Ранний Доступ!").send()
+            self.player.update_url = ''
+            LoginFailedMessage(self.client, self.player, "Эта версия клиента больше не поддерживается. Установите актуальную сборку сервера.").send()
             return
 
         with open('config.json', 'r') as config:
@@ -54,7 +54,7 @@ class LoginMessage(BSMessageReader):
         if self.player.low_id in settings['banID']:
             print("banned")
             self.player.err_code = 11
-            LoginFailedMessage(self.client, self.player, "Вы заблокированы. Подать аппеляцию можно написав админу - @zoxdev").send()
+            LoginFailedMessage(self.client, self.player, "Вы заблокированы. Обратитесь к владельцу сервера для проверки блокировки.").send()
             return
 
         if settings['maintenance']:
@@ -71,33 +71,35 @@ class LoginMessage(BSMessageReader):
         self.player.Region = region
         
         
-        # Создание нового аккаунта
-        if self.player.low_id == 0:
-            self.create_fresh_account()
+        loaded = False
 
-        
-        # Проверка существующего аккаунта
-        if self.player.low_id >= 2:
-            if not DataBase.accountExists(self):
-                self.create_fresh_account()
-
-            if not DataBase.loadAccount(self):
-                return
-
-            LoginOkMessage(self.client, self.player).send()
-            OwnHomeDataMessage(self.client, self.player).send()
-            try:
-                MyAllianceMessage(self.client, self.player, self.player.club_low_id).send()
-                AllianceStreamMessage(self.client, self.player, self.player.club_low_id, 0).send()
-                DataBase.GetmsgCount(self, self.player.club_low_id)
-            except:
-                MyAllianceMessage(self.client, self.player, 0).send()
-                AllianceStreamMessage(self.client, self.player, 0, 0).send()
-            FriendListMessage(self.client, self.player).send()
-            DevMessage(self.client, self.player).send()
+        if DataBase.accountExists(self, self.player.token):
+            loaded = DataBase.loadAccount(self, token=self.player.token)
+        elif DataBase.accountExistsByLowID(self, self.player.low_id):
+            loaded = DataBase.loadAccount(self, low_id=self.player.low_id)
         else:
+            self.create_fresh_account()
+            loaded = DataBase.loadAccount(self, token=self.player.token)
+
+        if not loaded:
+            return
+
+        if self.player.low_id < 2:
             self.player.err_code = 8
             LoginFailedMessage(self.client, self.player, "Аккаунт не найден, удалите все данные о игре!").send()
+            return
+
+        LoginOkMessage(self.client, self.player).send()
+        OwnHomeDataMessage(self.client, self.player).send()
+        try:
+            MyAllianceMessage(self.client, self.player, self.player.club_low_id).send()
+            AllianceStreamMessage(self.client, self.player, self.player.club_low_id, 0).send()
+            DataBase.GetmsgCount(self, self.player.club_low_id)
+        except:
+            MyAllianceMessage(self.client, self.player, 0).send()
+            AllianceStreamMessage(self.client, self.player, 0, 0).send()
+        FriendListMessage(self.client, self.player).send()
+        DevMessage(self.client, self.player).send()
             
     def get_region_by_ip(self, ip_address):
         """Метод для определения региона по IP"""

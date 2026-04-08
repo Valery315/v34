@@ -24,10 +24,10 @@ import pyfiglet
 from database.DataBase import DataBase
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-ascii_banner = pyfiglet.figlet_format("ZoxDev")
+ascii_banner = pyfiglet.figlet_format("Server Bot")
 colored_banner = colored(ascii_banner, color='red')
 print(colored_banner)
-print(colored(f"Bot created by @ZoxDev", 'red'))
+print(colored("Bot initialized", 'red'))
 print(colored(f"Version 3.2.2", 'red'))
 print(colored(f"started!", 'green'))
 
@@ -56,7 +56,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 # Telegram owner/admin IDs
 OWNER_TELEGRAM_ID = int(os.getenv("BOTUSER_OWNER_ID", "6721976368"))
-admins = {OWNER_TELEGRAM_ID, 7014105936, 7745508536}
+admins = {OWNER_TELEGRAM_ID}
 tehs = set()
 managers = set()  # 1755600329
 creator1 = set()

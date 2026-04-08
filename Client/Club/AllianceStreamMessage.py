@@ -21,7 +21,7 @@ class AllianceStreamMessage(BSMessageReader):
                 self.bot_msg = f'Выбери ID фона в меню!\n0 - Обычный\n1 - Новый год (Просто снег)\n 2 - Лунный новый год (2019)\n3 - Клэш Рояль\n5 - Золотая неделя\n7 - Меха (Лето 2019)\n8 - Хеллоуин\n9 - Пираты\n10 - Лунный новый год (2020)\n11 - ПСЖ\n12 - SC10\n13 - Базар Тары\n14 - СуперСити (Custom)\nИспользовать команду /theme ID'
                 self.IsAcmd = True
             else:
-                self.bot_msg = f'У тебя нет привилегии VIP\nПиши в тг @managerksdbrawl & @managerksdbrawl2 что бы купить'
+                self.bot_msg = 'У тебя нет привилегии VIP.\nVIP выдается только владельцем сервера.'
                 self.IsAcmd = True
         if self.msg.lower() == '/id':
             self.bot_msg = f'Твой айди {self.player.low_id}'
@@ -36,7 +36,7 @@ class AllianceStreamMessage(BSMessageReader):
                 except:
                     pass
             else:
-                self.bot_msg = f'У тебя нет привилегии VIP\nПиши в тг @managerksdbrawl & @managerksdbrawl2 что бы купить'
+                self.bot_msg = 'У тебя нет привилегии VIP.\nVIP выдается только владельцем сервера.'
                 self.IsAcmd = True
 
     def process(self):

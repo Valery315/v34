@@ -204,6 +204,8 @@ class ClientThread(Thread):
 
     def run(self):
         client_ip = self.address[0]
+        last_packet_id = None
+        last_packet_length = 0
         try:
             client_ip = self.client.getpeername()[0]
             self.player.ip_address = self.client.getpeername()[0]
@@ -212,6 +214,8 @@ class ClientThread(Thread):
                 if len(header) > 0:
                     packet_id = int.from_bytes(header[:2], 'big')
                     length = int.from_bytes(header[2:5], 'big')
+                    last_packet_id = packet_id
+                    last_packet_length = length
                     data = self.recvall(length)
 
                     self.total_received_bytes += length
@@ -234,13 +238,26 @@ class ClientThread(Thread):
                         self.last_packet_time = time.time()
 
                     if packet_id in packets:
-                        message = packets[packet_id](self.client, self.player, data)
-                        message.decode()
-                        message.process()
+                        try:
+                            message = packets[packet_id](self.client, self.player, data)
+                            message.decode()
+                            message.process()
+                        except Exception as packet_error:
+                            log_info(
+                                f"[ERROR] Пакет {packet_id} (len={length}) у клиента {client_ip}: {packet_error}"
+                            )
+                            continue
+                    else:
+                        log_info(f"[DEBUG] Неизвестный пакет {packet_id} (len={length}) от {client_ip}")
                 else:
                     break
         except Exception as e:
-            log_info(f"[ERROR] У клиента Ошибка - {client_ip}: {e}")
+            if last_packet_id is not None:
+                log_info(
+                    f"[ERROR] У клиента Ошибка - {client_ip}: {e} | last_packet={last_packet_id} len={last_packet_length}"
+                )
+            else:
+                log_info(f"[ERROR] У клиента Ошибка - {client_ip}: {e}")
         finally:
             self.client.close()
             connected_ips.discard(client_ip)

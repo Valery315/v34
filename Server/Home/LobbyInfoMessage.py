@@ -12,5 +12,5 @@ class LobbyInfoMessage(Writer):
         now = datetime.now()
         ping = random.randint(19,33)
         self.writeVint(0)#\nPlayer Online: {self.count}
-        self.writeString(f'ShinyBrawl\nTG: @shinyservers\nPing: {ping}ms\nOnline: {self.count}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+        self.writeString(f'Speed Brawl\nPing: {ping}ms\nOnline: {self.count}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
         self.writeVint(0)

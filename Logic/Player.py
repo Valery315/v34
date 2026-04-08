@@ -106,7 +106,7 @@ class Players:
 	vip = 0
 	notifRead = False
 	notifRead2 = False
-	notifications = {"2": {"ID": 3, "Read": False, "Timer": 1739268880, "Desc": "\u0414\u043e\u0431\u0440\u043e \u041f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u0432 Monrax Brawl!", "BrawlerID": 0, "SkinID": 0, "Gems": 30}}
+	notifications = {"2": {"ID": 3, "Read": False, "Timer": 1739268880, "Desc": "\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u0432 Speed Brawl!", "BrawlerID": 0, "SkinID": 0, "Gems": 30}}
 	# Socket
 	ClientDict = {}
 	
@@ -138,8 +138,8 @@ class Players:
 	club_role = 0
 
 	# Message stuff...
-	update_url = 'https://t.me/RoyaleStudio/339'
-	patch_url = 'https://t.me/RoyaleStudio/339'
+	update_url = ''
+	patch_url = ''
 	patch_sha = Fingerprint.loadFinger("GameAssets/fingerprint.json")
 	maintenance_time = 0
 

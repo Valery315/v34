@@ -8,28 +8,49 @@ import requests
 class DataBase:
     def accountExists(self, token=None):
         token = token if token is not None else self.player.token
+        if not token:
+            return False
         with sql.connect("database/Player/plr.db") as conn:
             cur = conn.cursor()
             cur.execute("SELECT 1 FROM plrs WHERE token=? LIMIT 1", (token,))
             return cur.fetchone() is not None
 
-    def loadAccount(self):
+    def accountExistsByLowID(self, low_id=None):
+        low_id = low_id if low_id is not None else self.player.low_id
+        if low_id is None or low_id < 2:
+            return False
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT 1 FROM plrs WHERE lowID=? LIMIT 1", (low_id,))
+            return cur.fetchone() is not None
+
+    def getAccountRow(self, token=None, low_id=None):
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            if token:
+                cur.execute("SELECT * FROM plrs WHERE token=? LIMIT 1", (token,))
+                row = cur.fetchone()
+                if row is not None:
+                    return row
+            if low_id is not None and low_id >= 2:
+                cur.execute("SELECT * FROM plrs WHERE lowID=? LIMIT 1", (low_id,))
+                return cur.fetchone()
+        return None
+
+    def loadAccount(self, token=None, low_id=None):
         from Server.Login.LoginFailedMessage import LoginFailedMessage
-        self.conn = sql.connect("database/Player/plr.db")
-        self.cur = self.conn.cursor()
-        try:
-            self.cur.execute("SELECT * FROM plrs WHERE token=?", (self.player.token,))
-            fetch = self.cur.fetchall()
-            user_data = fetch[0]
-        except (sql.OperationalError, IndexError):
-            user_data=None
+        token = token if token is not None else self.player.token
+        low_id = low_id if low_id is not None else self.player.low_id
+        user_data = DataBase.getAccountRow(self, token=token, low_id=low_id)
+
+        if user_data is None:
             self.player.err_code = 1
-            print("[ERROR] - ",self.player.ip_address, "- 0008")
+            print("[ERROR] - ", getattr(self.player, "ip_address", "unknown"), "- 0008")
             LoginFailedMessage(self.client, self.player, "Server Error: 8").send()
-            self.conn.close()
             return False
             
         if user_data:
+            self.player.token = user_data[0]
             self.player.low_id = user_data[1]
             self.player.name = user_data[2]
             self.player.trophies = user_data[3]
@@ -96,7 +117,6 @@ class DataBase:
             if self.player.trophies > self.player.highest_trophies:
                 self.player.highest_trophies = self.player.trophies
                 DataBase.replaceValue(self, 'highest_trophies', self.player.highest_trophies)
-            self.conn.close()
             return True
 
     def createAccount(self):

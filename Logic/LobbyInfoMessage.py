@@ -24,9 +24,8 @@ class LobbyInfoMessage(Writer):
         ping_ms = self.get_ping()
         ip_count = len(connected_ips)
         message = (
-            f'Monrax Brawl\n'
+            f'Speed Brawl\n'
             f'Version: 29(34)Prod\n'
-            f'TG: @MonraxBRAWL\n'
             f'Пинг: {ping_ms}ms\n'
             f'Онлайн: {ip_count}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n:)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
         )
