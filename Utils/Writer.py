@@ -13,7 +13,7 @@ class Writer:
         self.buffer = b''
 
     def writeInt(self, data, length=4):
-        self.buffer += data.to_bytes(length, 'big')
+        self.buffer += data.to_bytes(length, 'big', signed=(data < 0))
 
     def writeLkPrtctrdInt(self, data, length = 4):
         tempBuf = list(self.buffer)
@@ -159,6 +159,13 @@ class Writer:
                 data >>= 7
         self.buffer += final
 
+    def writeVInt(self, data, rotate: bool = True):
+        self.writeVint(data, rotate)
+
+    def writeLogicLong(self, high, low):
+        self.writeVint(high)
+        self.writeVint(low)
+
     def writeDataReference(self, x, y=0):
         if x != 0:
             self.writeVInt(x)
@@ -173,6 +180,9 @@ class Writer:
             encoded = string.encode('utf-8')
             self.writeInt(len(encoded))
             self.buffer += encoded
+
+    def writeStringReference(self, string: str = None):
+        self.writeString(string)
 
     def write_string_reference(self, string: str = None):
 

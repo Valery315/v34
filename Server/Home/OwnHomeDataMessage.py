@@ -369,31 +369,18 @@ class OwnHomeDataMessage(Writer):
         self.writeVint(-1)
         self.writeBoolean(False)
 
-        self.writeVint(0)
-        self.writeVint(0)
-
-        self.writeVint(self.player.high_id)  # High Id
-        self.writeVint(self.player.low_id)  # Low Id
-
-        self.writeVint(0)
+        # Gatcha Drop Array
         self.writeVint(0)
 
-        self.writeVint(0)
-        self.writeVint(0)
-
-        if self.player.name == "VBC26":
-            self.writeString("VBC26")  # Player Name
-            self.writeVint(0)
-        else:
-            if self.player.vip == 1:
-                self.writeString(f"{self.player.name}")  # Player Name
-            else:
-                self.writeString(f"{self.player.name}")  # Player Name
-            self.writeVint(1)
-
-        self.writeInt(0)
-
-        self.writeVint(8)
+        # LogicClientAvatar header. The settings screen reads this block and
+        # crashes if the account/name state fields are misaligned.
+        self.writeLogicLong(self.player.high_id, self.player.low_id)
+        self.writeLogicLong(0, 0)
+        self.writeLogicLong(0, 0)
+        self.writeStringReference(self.player.name)
+        self.writeBoolean(True)  # Registered Name State
+        self.writeInt(-1)
+        self.writeVint(8)  # Commodity Count
 
         # Unlocked Brawlers & Resources array
         self.writeVint(len(self.player.card_unlock_id) + 2)  # count
@@ -450,9 +437,9 @@ class OwnHomeDataMessage(Writer):
         self.writeVint(0)  # brawlers count
 
         self.writeVint(self.player.gems)  # Player Gems
-        self.writeVint(self.player.gems)
-        self.writeVint(40)
-        self.writeVint(0)
+        self.writeVint(self.player.gems)  # Free Gems
+        self.writeVint(max(1, int(self.player.player_experience or 0)))
+        self.writeVint(100)
         self.writeVint(0)
         self.writeVint(0)
         self.writeVint(0)
@@ -461,7 +448,7 @@ class OwnHomeDataMessage(Writer):
         self.writeVint(0)
         self.writeVint(0)
         self.writeVint(2)
-        self.writeVint(1585502369)
+        self.writeVint(self.timestamp)
         DataBase.replaceValue(self, 'online', 2)
         config = open('config.json', 'r')
         content = config.read()
