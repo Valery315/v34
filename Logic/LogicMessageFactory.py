@@ -1,6 +1,7 @@
 from Client.Login.ClientHelloMessage import ClientHelloMessage
 from Client.Login.LoginMessage import LoginMessage
 from Client.KeepAliveMessage import KeepAliveMessage
+from Client.AccountIdentifiersMessage import AccountIdentifiersMessage
 from Client.Battle.GoHomeFromOfflinePractiseMessage import GoHomeFromOfflinePractiseMessage
 from Client.Home.AskProfileMessage import AskProfileMessage
 from Client.AnalyticsEventMessage import AnalyticsEventMessage
@@ -61,6 +62,7 @@ packets = {
     10107: ClientCapabilities,
     10108: KeepAliveMessage,
     10110: AnalyticsEventMessage,
+    10111: AccountIdentifiersMessage,
     10212: SetNameMessage,
     14102: EndClientTurn,
     14103: OnPlay,
