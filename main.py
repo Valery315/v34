@@ -1,6 +1,7 @@
 from multiprocessing import Process
 import subprocess
 import os
+from Utils.Storage import bootstrap_persistent_storage
 
 def run_script(script_name):
     try:
@@ -9,6 +10,8 @@ def run_script(script_name):
         print(f"Ошибка при запуске {script_name}: {e}")
 
 if __name__ == "__main__":
+    bootstrap_persistent_storage()
+
     # Railway/container friendly: enable/disable optional processes via env flags.
     # Defaults: run core + antibot; skip antiddos (iptables/scapy) unless explicitly enabled.
     enable_botuser = os.getenv("ENABLE_BOTUSER", "1") == "1"
