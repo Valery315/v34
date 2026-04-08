@@ -6,6 +6,62 @@ import time
 import requests
 
 class DataBase:
+    def ensurePostTutorialProfile(self):
+        starter_brawler = str(int(getattr(self.player, "brawler_id", 0) or 0))
+        if starter_brawler not in getattr(self.player, "brawlers_trophies", {}):
+            starter_brawler = "0"
+
+        changed = False
+        total_trophies = 0
+        for value in getattr(self.player, "brawlers_trophies", {}).values():
+            try:
+                total_trophies += int(value)
+            except (TypeError, ValueError):
+                pass
+
+        if total_trophies > 0:
+            return False
+
+        if self.player.UnlockedBrawlers.get(starter_brawler, 0) != 1:
+            self.player.UnlockedBrawlers[starter_brawler] = 1
+            DataBase.replaceValue(self, "UnlockedBrawlers", self.player.UnlockedBrawlers)
+            changed = True
+
+        if self.player.brawlers_trophies.get(starter_brawler, 0) < 25:
+            self.player.brawlers_trophies[starter_brawler] = 25
+            DataBase.replaceValue(self, "brawlersTrophies", self.player.brawlers_trophies)
+            changed = True
+
+        if self.player.brawlerPowerLevel.get(starter_brawler, 0) < 1:
+            self.player.brawlerPowerLevel[starter_brawler] = 1
+            DataBase.replaceValue(self, "brawlerPowerLevel", self.player.brawlerPowerLevel)
+            changed = True
+
+        self.player.trophies = 0
+        for value in self.player.brawlers_trophies.values():
+            try:
+                self.player.trophies += int(value)
+            except (TypeError, ValueError):
+                pass
+
+        if self.player.highest_trophies < self.player.trophies:
+            self.player.highest_trophies = self.player.trophies
+            DataBase.replaceValue(self, "highest_trophies", self.player.highest_trophies)
+            changed = True
+
+        if self.player.Troproad < 6:
+            self.player.Troproad = 6
+            DataBase.replaceValue(self, "Troproad", self.player.Troproad)
+            changed = True
+
+        if self.player.player_experience < 10:
+            self.player.player_experience = 10
+            DataBase.replaceValue(self, "playerExp", self.player.player_experience)
+            changed = True
+
+        DataBase.replaceValue(self, "trophies", self.player.trophies)
+        return changed
+
     def accountExistsByLoginIdentifier(self, login_identifier=None):
         login_identifier = (
             login_identifier

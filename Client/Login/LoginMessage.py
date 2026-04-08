@@ -113,6 +113,12 @@ class LoginMessage(BSMessageReader):
         if self.player.login_identifier:
             DataBase.bindLoginIdentifier(self, self.player.login_identifier)
 
+        if DataBase.ensurePostTutorialProfile(self):
+            print(
+                f"[ИНФО] Starter profile normalized for low_id={self.player.low_id} "
+                f"trophies={self.player.trophies}"
+            )
+
         print(
             f"[ИНФО] Login restore: source={load_source} low_id={self.player.low_id} "
             f"token_len={len(self.player.token or '')} "
