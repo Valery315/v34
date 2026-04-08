@@ -6,6 +6,22 @@ import time
 import requests
 
 class DataBase:
+    def accountExistsByIdentifiers(self, account_identifiers=None):
+        account_identifiers = (
+            account_identifiers
+            if account_identifiers is not None
+            else getattr(self.player, "account_identifiers", "")
+        )
+        if not account_identifiers:
+            return False
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT 1 FROM plrs WHERE accountIdentifiers=? LIMIT 1",
+                (account_identifiers,),
+            )
+            return cur.fetchone() is not None
+
     def accountExists(self, token=None):
         token = token if token is not None else self.player.token
         if not token:
@@ -24,7 +40,7 @@ class DataBase:
             cur.execute("SELECT 1 FROM plrs WHERE lowID=? LIMIT 1", (low_id,))
             return cur.fetchone() is not None
 
-    def getAccountRow(self, token=None, low_id=None):
+    def getAccountRow(self, token=None, low_id=None, account_identifiers=None):
         with sql.connect("database/Player/plr.db") as conn:
             cur = conn.cursor()
             if token:
@@ -34,14 +50,32 @@ class DataBase:
                     return row
             if low_id is not None and low_id >= 2:
                 cur.execute("SELECT * FROM plrs WHERE lowID=? LIMIT 1", (low_id,))
+                row = cur.fetchone()
+                if row is not None:
+                    return row
+            if account_identifiers:
+                cur.execute(
+                    "SELECT * FROM plrs WHERE accountIdentifiers=? LIMIT 1",
+                    (account_identifiers,),
+                )
                 return cur.fetchone()
         return None
 
-    def loadAccount(self, token=None, low_id=None):
+    def loadAccount(self, token=None, low_id=None, account_identifiers=None):
         from Server.Login.LoginFailedMessage import LoginFailedMessage
         token = token if token is not None else self.player.token
         low_id = low_id if low_id is not None else self.player.low_id
-        user_data = DataBase.getAccountRow(self, token=token, low_id=low_id)
+        account_identifiers = (
+            account_identifiers
+            if account_identifiers is not None
+            else getattr(self.player, "account_identifiers", "")
+        )
+        user_data = DataBase.getAccountRow(
+            self,
+            token=token,
+            low_id=low_id,
+            account_identifiers=account_identifiers,
+        )
 
         if user_data is None:
             self.player.err_code = 1
@@ -93,6 +127,8 @@ class DataBase:
             self.player.Region = user_data[36]
             self.player.notifications = user_data[37]
             playerData = json.loads(user_data[38])
+            if len(user_data) > 39:
+                self.player.account_identifiers = user_data[39] or ""
             friends = json.loads(user_data[22])
             brawlerData = json.loads(user_data[13])
             self.player.test = playerData["Test"]
@@ -123,19 +159,40 @@ class DataBase:
         if os.path.exists("database/Player/plr.db"):
             self.conn = sql.connect("database/Player/plr.db")
             self.cur = self.conn.cursor()
-            self.cur.execute("CREATE TABLE IF NOT EXISTS plrs (token TEXT, lowID INT, name TEXT, trophies INT, gold INT, gems INT, starpoints INT, tickets INT, Troproad INT, profile_icon INT, name_color INT, clubID INT, clubRole INT, brawlerData JSON, brawlerID INT, skinID INT, roomID INT, box INT, bigbox INT, online INT, vip INT, playerExp INT, friends JSON, SCC TEXT, trioWINS INT, sdWINS INT, theme INT, BPTOKEN INT, BPXP INT, quests JSON, freepass INT, buypass INT, notifRead INT, notifRead2 INT, ip_address TEXT, creation_date TEXT, Region TEXT, notifications JSON, playerData JSON)")
+            self.cur.execute("CREATE TABLE IF NOT EXISTS plrs (token TEXT, lowID INT, name TEXT, trophies INT, gold INT, gems INT, starpoints INT, tickets INT, Troproad INT, profile_icon INT, name_color INT, clubID INT, clubRole INT, brawlerData JSON, brawlerID INT, skinID INT, roomID INT, box INT, bigbox INT, online INT, vip INT, playerExp INT, friends JSON, SCC TEXT, trioWINS INT, sdWINS INT, theme INT, BPTOKEN INT, BPXP INT, quests JSON, freepass INT, buypass INT, notifRead INT, notifRead2 INT, ip_address TEXT, creation_date TEXT, Region TEXT, notifications JSON, playerData JSON, accountIdentifiers TEXT)")
+            self.cur.execute("PRAGMA table_info(plrs)")
+            columns = [row[1] for row in self.cur.fetchall()]
+            if "accountIdentifiers" not in columns:
+                self.cur.execute("ALTER TABLE plrs ADD COLUMN accountIdentifiers TEXT DEFAULT ''")
             self.conn.commit()
             json_quests = json.dumps(self.player.quests)  # Преобразование в строку JSON
             jsonFBP = json.dumps(self.player.freepass)
             jsonBBP = json.dumps(self.player.buypass)
             self.player.creation_date = datetime.datetime.now().strftime("%Y.%m.%d %H:%M:%S")
             self.player.Region = self.get_region_by_ip(self.player.ip_address)
-            var = (self.player.token, self.player.low_id, self.player.name, self.player.trophies, self.player.gold, self.player.gems, self.player.starpoints, self.player.tickets, self.player.Troproad, self.player.profile_icon, self.player.name_color, self.player.club_low_id, self.player.club_role, json.dumps({"highest_trophies": self.player.highest_trophies, "brawlersTrophies": self.player.brawlers_trophies, "UnlockedBrawlers": self.player.UnlockedBrawlers, "UnlockedSkins": self.player.UnlockedSkins, "brawlerPowerLevel": self.player.brawlerPowerLevel, "brawlerPoints": self.player.brawlerPoints, "StarPowerUnlocked": self.player.StarPowerUnlocked, "UnlockedPins": self.player.UnlockedPins}), self.player.brawler_id, self.player.skin_id, self.player.room_id, self.player.box, self.player.bigbox, self.player.online, self.player.vip, self.player.player_experience, json.dumps([]), self.player.ccc, self.player.trioWINS, self.player.sdWINS, self.player.theme, self.player.BPTOKEN, self.player.BPXP, json_quests, jsonFBP, jsonBBP, self.player.notifRead, self.player.notifRead2, self.player.ip_address, self.player.creation_date, self.player.Region, json.dumps(self.player.notifications), json.dumps({"Test": self.player.test, "Debacle": self.player.debacle, "Boss_Fight": self.player.boss_fight, "Robo_Cabin": self.player.robo_cabin, "Power_Race": self.player.power_race, "Duo_Wins": self.player.duo_wins}))
-            self.cur.execute("INSERT INTO plrs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", var)
+            var = (self.player.token, self.player.low_id, self.player.name, self.player.trophies, self.player.gold, self.player.gems, self.player.starpoints, self.player.tickets, self.player.Troproad, self.player.profile_icon, self.player.name_color, self.player.club_low_id, self.player.club_role, json.dumps({"highest_trophies": self.player.highest_trophies, "brawlersTrophies": self.player.brawlers_trophies, "UnlockedBrawlers": self.player.UnlockedBrawlers, "UnlockedSkins": self.player.UnlockedSkins, "brawlerPowerLevel": self.player.brawlerPowerLevel, "brawlerPoints": self.player.brawlerPoints, "StarPowerUnlocked": self.player.StarPowerUnlocked, "UnlockedPins": self.player.UnlockedPins}), self.player.brawler_id, self.player.skin_id, self.player.room_id, self.player.box, self.player.bigbox, self.player.online, self.player.vip, self.player.player_experience, json.dumps([]), self.player.ccc, self.player.trioWINS, self.player.sdWINS, self.player.theme, self.player.BPTOKEN, self.player.BPXP, json_quests, jsonFBP, jsonBBP, self.player.notifRead, self.player.notifRead2, self.player.ip_address, self.player.creation_date, self.player.Region, json.dumps(self.player.notifications), json.dumps({"Test": self.player.test, "Debacle": self.player.debacle, "Boss_Fight": self.player.boss_fight, "Robo_Cabin": self.player.robo_cabin, "Power_Race": self.player.power_race, "Duo_Wins": self.player.duo_wins}), getattr(self.player, "account_identifiers", ""))
+            self.cur.execute("INSERT INTO plrs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", var)
             self.conn.commit()
             self.conn.close()
         else:
             self.player.low_id = 2
+
+    def bindAccountIdentifiers(self, account_identifiers=None):
+        account_identifiers = (
+            account_identifiers
+            if account_identifiers is not None
+            else getattr(self.player, "account_identifiers", "")
+        )
+        if not account_identifiers or not getattr(self.player, "token", ""):
+            return
+
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE plrs SET accountIdentifiers=? WHERE token=?",
+                (account_identifiers, self.player.token),
+            )
+            conn.commit()
     def getSuggestions(self):
         self.conn = sql.connect("database/Player/plr.db")
         self.cur = self.conn.cursor()

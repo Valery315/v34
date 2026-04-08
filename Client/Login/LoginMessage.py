@@ -72,17 +72,38 @@ class LoginMessage(BSMessageReader):
         
         
         loaded = False
+        load_source = "new"
+        account_identifiers = getattr(self.player, "account_identifiers", "")
 
         if DataBase.accountExists(self, self.player.token):
             loaded = DataBase.loadAccount(self, token=self.player.token)
+            load_source = "token"
         elif DataBase.accountExistsByLowID(self, self.player.low_id):
             loaded = DataBase.loadAccount(self, low_id=self.player.low_id)
+            load_source = "low_id"
+        elif DataBase.accountExistsByIdentifiers(self, account_identifiers):
+            loaded = DataBase.loadAccount(self, account_identifiers=account_identifiers)
+            load_source = "account_identifiers"
         else:
             self.create_fresh_account()
+            if account_identifiers:
+                self.player.account_identifiers = account_identifiers
             loaded = DataBase.loadAccount(self, token=self.player.token)
+            load_source = "created"
 
         if not loaded:
             return
+
+        if account_identifiers and self.player.account_identifiers != account_identifiers:
+            self.player.account_identifiers = account_identifiers
+        if self.player.account_identifiers:
+            DataBase.bindAccountIdentifiers(self, self.player.account_identifiers)
+
+        print(
+            f"[ИНФО] Login restore: source={load_source} low_id={self.player.low_id} "
+            f"token_len={len(self.player.token or '')} "
+            f"account_identifiers={'yes' if self.player.account_identifiers else 'no'}"
+        )
 
         if self.player.low_id < 2:
             self.player.err_code = 8

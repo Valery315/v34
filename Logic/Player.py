@@ -42,6 +42,7 @@ class Players:
 	high_id = 0
 	low_id = 0
 	token = Helpers().randomStringDigits()
+	account_identifiers = ""
 	IsFacebookLinked = 0
 	FacebookID = "None"
 	FacebookToken = "None"

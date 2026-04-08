@@ -59,6 +59,10 @@ class Server:
         if os.path.exists("database/Player/plr.db"):
             with sqlite3.connect("database/Player/plr.db") as conn:
                 c = conn.cursor()
+                c.execute("PRAGMA table_info(plrs)")
+                columns = [row[1] for row in c.fetchall()]
+                if "accountIdentifiers" not in columns:
+                    c.execute("ALTER TABLE plrs ADD COLUMN accountIdentifiers TEXT DEFAULT ''")
                 c.execute("UPDATE plrs SET roomID=0")
                 c.execute("UPDATE plrs SET online=0")
                 conn.commit()
@@ -66,7 +70,7 @@ class Server:
             with sqlite3.connect("database/Player/plr.db") as conn:
                 c = conn.cursor()
                 c.execute(""" 
-                    CREATE TABLE IF NOT EXISTS plrs (token TEXT, lowID INT, name TEXT, trophies INT, gold INT, gems INT, starpoints INT, tickets INT, Troproad INT, profile_icon INT, name_color INT, clubID INT, clubRole INT, brawlerData JSON, brawlerID INT, skinID INT, roomID INT, box INT, bigbox INT, online INT, vip INT, playerExp INT, friends JSON, SCC TEXT, trioWINS INT, sdWINS INT, theme INT, BPTOKEN INT, BPXP INT, quests JSON, freepass INT, buypass INT, notifRead INT, notifRead2 INT, ip_address TEXT, creation_date TEXT, Region TEXT, notifications JSON, playerData JSON)
+                    CREATE TABLE IF NOT EXISTS plrs (token TEXT, lowID INT, name TEXT, trophies INT, gold INT, gems INT, starpoints INT, tickets INT, Troproad INT, profile_icon INT, name_color INT, clubID INT, clubRole INT, brawlerData JSON, brawlerID INT, skinID INT, roomID INT, box INT, bigbox INT, online INT, vip INT, playerExp INT, friends JSON, SCC TEXT, trioWINS INT, sdWINS INT, theme INT, BPTOKEN INT, BPXP INT, quests JSON, freepass INT, buypass INT, notifRead INT, notifRead2 INT, ip_address TEXT, creation_date TEXT, Region TEXT, notifications JSON, playerData JSON, accountIdentifiers TEXT)
                 """)
                 conn.commit()
 
