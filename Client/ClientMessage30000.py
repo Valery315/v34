@@ -2,6 +2,7 @@ import hashlib
 
 from Utils.Reader import BSMessageReader
 from database.DataBase import DataBase
+from Server.Login.LoginOkMessage import LoginOkMessage
 from Server.Home.OwnHomeDataMessage import OwnHomeDataMessage
 from Server.Friend.FriendListMessage import FriendListMessage
 from Server.Club.MyAllianceMessage import MyAllianceMessage
@@ -70,6 +71,9 @@ class ClientMessage30000(BSMessageReader):
             )
             return
 
+        # The client has already received a temporary LoginOk for a throwaway low_id.
+        # Send LoginOk again with the rebound low_id so the client updates its active account.
+        LoginOkMessage(self.client, self.player).send()
         OwnHomeDataMessage(self.client, self.player).send()
         try:
             MyAllianceMessage(self.client, self.player, self.player.club_low_id).send()
