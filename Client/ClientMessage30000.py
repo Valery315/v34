@@ -62,7 +62,13 @@ class ClientMessage30000(BSMessageReader):
             )
             return
 
-        DataBase.rebindTokenToLowID(self, existing_low_id, current_token, self.identifier)
+        DataBase.rebindTokenToLowID(
+            self,
+            existing_low_id,
+            current_token,
+            self.identifier,
+            getattr(self.player, "login_identifier", ""),
+        )
         restored = DataBase.loadAccount(self, token=current_token)
         if not restored:
             print(

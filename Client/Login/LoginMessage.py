@@ -1,5 +1,6 @@
 import os
 import json
+import hashlib
 import requests  # Добавляем импорт
 from ipwhois import IPWhois
 from Server.Login.LoginOkMessage import LoginOkMessage
@@ -28,6 +29,11 @@ class LoginMessage(BSMessageReader):
         self.major = self.read_int()
         self.minor = self.read_int()
         self.build = self.read_int()
+        login_tail = self.read()
+        if login_tail:
+            self.player.login_identifier = f"10101:{hashlib.sha1(login_tail).hexdigest()}"
+        else:
+            self.player.login_identifier = ""
 
     def create_fresh_account(self):
         plrsinfo = "database/Player/plr.db"
@@ -74,6 +80,7 @@ class LoginMessage(BSMessageReader):
         loaded = False
         load_source = "new"
         account_identifiers = getattr(self.player, "account_identifiers", "")
+        login_identifier = getattr(self.player, "login_identifier", "")
 
         if DataBase.accountExists(self, self.player.token):
             loaded = DataBase.loadAccount(self, token=self.player.token)
@@ -81,6 +88,9 @@ class LoginMessage(BSMessageReader):
         elif DataBase.accountExistsByLowID(self, self.player.low_id):
             loaded = DataBase.loadAccount(self, low_id=self.player.low_id)
             load_source = "low_id"
+        elif DataBase.accountExistsByLoginIdentifier(self, login_identifier):
+            loaded = DataBase.loadAccount(self, login_identifier=login_identifier)
+            load_source = "login_identifier"
         elif DataBase.accountExistsByIdentifiers(self, account_identifiers):
             loaded = DataBase.loadAccount(self, account_identifiers=account_identifiers)
             load_source = "account_identifiers"
@@ -98,11 +108,16 @@ class LoginMessage(BSMessageReader):
             self.player.account_identifiers = account_identifiers
         if self.player.account_identifiers:
             DataBase.bindAccountIdentifiers(self, self.player.account_identifiers)
+        if login_identifier and self.player.login_identifier != login_identifier:
+            self.player.login_identifier = login_identifier
+        if self.player.login_identifier:
+            DataBase.bindLoginIdentifier(self, self.player.login_identifier)
 
         print(
             f"[ИНФО] Login restore: source={load_source} low_id={self.player.low_id} "
             f"token_len={len(self.player.token or '')} "
-            f"account_identifiers={'yes' if self.player.account_identifiers else 'no'}"
+            f"account_identifiers={'yes' if self.player.account_identifiers else 'no'} "
+            f"login_identifier={'yes' if self.player.login_identifier else 'no'}"
         )
 
         if self.player.low_id < 2:
