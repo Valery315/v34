@@ -35,11 +35,17 @@ class Writer:
     def writeUInt8(self, integer: int):
         self.writeUInteger(integer)
 
-    def writeBoolean(self, boolean: bool):
-        if boolean:
-            self.writeUInt8(1)
-        else:
-            self.writeUInt8(0)
+    def writeBoolean(self, *args):
+        if len(args) <= 1:
+            boolean = bool(args[0]) if args else False
+            self.writeUInt8(1 if boolean else 0)
+            return
+
+        packed = 0
+        for index, value in enumerate(args):
+            if value:
+                packed |= 1 << index
+        self.writeUInt8(packed)
 
     def writeHexa(self, data):
         if data:
@@ -181,6 +187,10 @@ class Writer:
     def writeInt16(self, data):
         self.writeInt(data, 2)
 
+    def writeLong(self, high, low):
+        self.writeInt(high)
+        self.writeInt(low)
+
     def writeScId(self, x, y):
         self.writeVint(x)
         self.writeVint(y)
@@ -193,3 +203,9 @@ class Writer:
     def writeBytes(self, data):
         self.writeInt(len(data))
         self.buffer += data
+
+    def writeCompressedString(self, data: bytes):
+        compressed = zlib.compress(data)
+        self.writeInt(len(compressed) + 4)
+        self.buffer += len(data).to_bytes(4, 'little', signed=False)
+        self.buffer += compressed

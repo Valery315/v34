@@ -12,12 +12,10 @@ class LoginOkMessage(Writer):
 
     def encode(self):
         # Account ID
-        self.writeInt(0)
-        self.writeInt(self.player.low_id)
+        self.writeLong(0, self.player.low_id)
 
         # Home ID
-        self.writeInt(0)
-        self.writeInt(self.player.low_id)
+        self.writeLong(0, self.player.low_id)
 
         self.writeString(self.player.token)
         self.writeString()
@@ -33,7 +31,7 @@ class LoginOkMessage(Writer):
         self.writeInt(0)
         self.writeInt(0)
 
-        self.writeString()
+        self.writeString("103121310241222")
         self.writeString()
         self.writeString()
 
@@ -43,7 +41,7 @@ class LoginOkMessage(Writer):
         self.writeString(self.player.Region)
         self.writeString()
 
-        self.writeInt(1)
+        self.writeInt(2)
         self.writeString()
 
         self.writeInt(2) # Url Entry Array Count
@@ -53,3 +51,8 @@ class LoginOkMessage(Writer):
         self.writeInt(2) # Url Entry Array Count
         self.writeString("https://raw.githubusercontent.com/IsaaSooBart/Project-LaserScratch/main/Files/EventAssets/") # Event Assets
         self.writeString("https://24b999e6da07674e22b0-8209975788a0f2469e68e84405ae4fcf.ssl.cf2.rackcdn.com/event-assets")
+
+        self.writeVint(0)  # Seconds Until Account Deletion
+        self.writeCompressedString(b"")  # Supercell ID Token
+        self.writeBoolean(True, False)  # Double Boolean
+        self.writeString("")
