@@ -387,31 +387,34 @@ class OwnHomeDataMessage(Writer):
 
         index = 0
         for unlock_id in self.player.card_unlock_id:
-            self.writeScId(23, unlock_id)
+            self.writeDataReference(23, unlock_id)
+            self.writeVint(-1)
             try:
                 self.writeVint(self.player.UnlockedBrawlers[str(index)])
             except:
                 self.writeVint(1)
             index += 1
 
-        self.writeVint(5)  # csv id
-        self.writeVint(8)  # resource id
+        self.writeDataReference(5, 8)  # gold
+        self.writeVint(-1)
         self.writeVint(self.player.gold)  # resource amount
 
-        self.writeVint(5)  # csv id
-        self.writeVint(10)  # resource id
+        self.writeDataReference(5, 10)  # star points
+        self.writeVint(-1)
         self.writeVint(self.player.starpoints)  # resource amount
 
         # Brawlers Trophies array
         self.writeVint(len(self.player.brawlers_trophies))  # brawlers count
         for brawler_id, trophies in self.player.brawlers_trophies.items():
-                self.writeScId(16, int(brawler_id))
+                self.writeDataReference(16, int(brawler_id))
+                self.writeVint(-1)
                 self.writeVint(self.player.brawlers_trophies[f"{int(brawler_id)}"])
 
         # Brawlers Trophies for Rank array
         self.writeVint(len(self.player.brawlers_trophies))  # brawlers count
         for brawler_id, trophies in self.player.brawlers_trophies.items():
-                self.writeScId(16, int(brawler_id))
+                self.writeDataReference(16, int(brawler_id))
+                self.writeVint(-1)
                 self.writeVint(self.player.brawlers_trophies[f"{int(brawler_id)}"])
 
         self.writeVint(0)  # array
@@ -419,19 +422,22 @@ class OwnHomeDataMessage(Writer):
         # Brawlers Upgrade Points array
         self.writeVint(len(self.player.brawlerPoints))  # brawlers count
         for brawler_id, trophies in self.player.brawlerPoints.items():
-                self.writeScId(16, int(brawler_id))
+                self.writeDataReference(16, int(brawler_id))
+                self.writeVint(-1)
                 self.writeVint(self.player.brawlerPoints[f"{int(brawler_id)}"])
 
         # Brawlers Power Level array
         self.writeVint(len(self.player.brawlerPowerLevel))  # brawlers count
         for brawler_id, trophies in self.player.brawlerPowerLevel.items():
-                self.writeScId(16, int(brawler_id))
+                self.writeDataReference(16, int(brawler_id))
+                self.writeVint(-1)
                 self.writeVint(self.player.brawlerPowerLevel[f"{int(brawler_id)}"])
 
         # Gadgets and Star Powers array
         self.writeVint(len(self.player.StarPowerUnlocked))
         for brawler_id, trophies in self.player.StarPowerUnlocked.items():
-                self.writeScId(23, int(brawler_id))
+                self.writeDataReference(23, int(brawler_id))
+                self.writeVint(-1)
                 self.writeVint(self.player.StarPowerUnlocked[f"{int(brawler_id)}"])
         # "new" Brawler Tag array
         self.writeVint(0)  # brawlers count
