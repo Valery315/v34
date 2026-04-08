@@ -447,7 +447,9 @@ class OwnHomeDataMessage(Writer):
         self.writeVint(0)
         self.writeVint(0)
         self.writeVint(0)
-        self.writeVint(2)
+        # Skip the built-in first-time tutorial by reporting a step after the
+        # final entry from assets/csv_client/tutorial.csv.
+        self.writeVint(19)
         self.writeVint(self.timestamp)
         DataBase.replaceValue(self, 'online', 2)
         config = open('config.json', 'r')
