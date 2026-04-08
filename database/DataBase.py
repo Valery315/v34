@@ -201,6 +201,19 @@ class DataBase:
             cur = conn.cursor()
             cur.execute("DELETE FROM plrs WHERE token=?", (token,))
             conn.commit()
+
+    def rebindTokenToLowID(self, low_id, new_token, account_identifiers=""):
+        if not low_id or not new_token:
+            return
+
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM plrs WHERE token=? AND lowID!=?", (new_token, low_id))
+            cur.execute(
+                "UPDATE plrs SET token=?, accountIdentifiers=? WHERE lowID=?",
+                (new_token, account_identifiers, low_id),
+            )
+            conn.commit()
     def getSuggestions(self):
         self.conn = sql.connect("database/Player/plr.db")
         self.cur = self.conn.cursor()

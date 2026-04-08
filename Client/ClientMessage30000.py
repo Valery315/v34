@@ -2,7 +2,6 @@ import hashlib
 
 from Utils.Reader import BSMessageReader
 from database.DataBase import DataBase
-from Server.Login.LoginOkMessage import LoginOkMessage
 from Server.Home.OwnHomeDataMessage import OwnHomeDataMessage
 from Server.Friend.FriendListMessage import FriendListMessage
 from Server.Club.MyAllianceMessage import MyAllianceMessage
@@ -62,9 +61,15 @@ class ClientMessage30000(BSMessageReader):
             )
             return
 
-        self.player.account_identifiers = self.identifier
-        DataBase.bindAccountIdentifiers(self, self.identifier)
-        LoginOkMessage(self.client, self.player).send()
+        DataBase.rebindTokenToLowID(self, existing_low_id, current_token, self.identifier)
+        restored = DataBase.loadAccount(self, token=current_token)
+        if not restored:
+            print(
+                f"[ИНФО] Handled packet 30000 (len={self.payload_size}) "
+                f"rebind_failed low_id={existing_low_id} id={self.identifier[-12:]}"
+            )
+            return
+
         OwnHomeDataMessage(self.client, self.player).send()
         try:
             MyAllianceMessage(self.client, self.player, self.player.club_low_id).send()
@@ -74,9 +79,8 @@ class ClientMessage30000(BSMessageReader):
             AllianceStreamMessage(self.client, self.player, 0, 0).send()
         FriendListMessage(self.client, self.player).send()
         DevMessage(self.client, self.player).send()
-        DataBase.deleteAccountByToken(self, current_token)
         print(
             f"[ИНФО] Handled packet 30000 (len={self.payload_size}) "
-            f"restored_low_id={self.player.low_id} from_temp={current_low_id} "
+            f"restored_low_id={self.player.low_id} rebound_token=yes from_temp={current_low_id} "
             f"id={self.identifier[-12:]}"
         )
