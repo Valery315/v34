@@ -10,14 +10,21 @@ class Notifications(Writer):
         super().__init__(client)
         self.timestamp = int(time.time())
 
+    def _get_notifications(self):
+        if isinstance(self.player.notifications, dict):
+            return self.player.notifications
+        if not self.player.notifications:
+            return {}
+        return json.loads(self.player.notifications)
+
     def GetNotifCount(self):
-        return len(json.loads(self.player.notifications))
+        return len(self._get_notifications())
 
     def GetNotifByIndex(self, index):
-        return json.loads(self.player.notifications).get(str(index))
+        return self._get_notifications().get(str(index))
 
     def UpdateNotifData(self, index):
-        notifications = json.loads(self.player.notifications)
+        notifications = self._get_notifications()
         if str(index) in notifications:
             notifications[str(index)]['Read'] = True
         self.player.notifications = json.dumps(notifications)

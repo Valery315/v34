@@ -19,6 +19,8 @@ class DataBase:
             self.player.err_code = 1
             print("[ERROR] - ",self.player.ip_address, "- 0008")
             LoginFailedMessage(self.client, self.player, "Server Error: 8").send()
+            self.conn.close()
+            return False
             
         if user_data:
             self.player.low_id = user_data[1]
@@ -88,6 +90,7 @@ class DataBase:
                 self.player.highest_trophies = self.player.trophies
                 DataBase.replaceValue(self, 'highest_trophies', self.player.highest_trophies)
             self.conn.close()
+            return True
 
     def createAccount(self):
         if os.path.exists("database/Player/plr.db"):

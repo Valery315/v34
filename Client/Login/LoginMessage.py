@@ -69,13 +69,14 @@ class LoginMessage(BSMessageReader):
                 self.player.low_id = 2
             self.player.token = Helpers().randomStringDigits()
             self.player.high_id = 0
-            LoginOkMessage(self.client, self.player).send()
             DataBase.createAccount(self)
-            OwnHomeDataMessage(self.client, self.player).send()
 
         
         # Проверка существующего аккаунта
         if self.player.low_id >= 2:
+            if not DataBase.loadAccount(self):
+                return
+
             LoginOkMessage(self.client, self.player).send()
             OwnHomeDataMessage(self.client, self.player).send()
             try:
