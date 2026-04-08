@@ -453,7 +453,7 @@ class OwnHomeDataMessage(Writer):
         self.writeVint(50)  # Win/Lose Streak
         self.writeVint(20)  # NPC Win Count
         self.writeVint(0)  # NPC Lose Count
-        self.writeVint(2)  # Tutorial State | 0 starts first tutorial battle
+        self.writeVint(19)  # Tutorial State | old clients treat higher states as fully completed
         self.writeVint(12)
         self.writeVint(0)
         self.writeVint(0)
