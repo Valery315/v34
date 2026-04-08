@@ -440,17 +440,21 @@ class OwnHomeDataMessage(Writer):
         self.writeVint(self.player.gems)  # Free Gems
         self.writeVint(max(1, int(self.player.player_experience or 0)))
         self.writeVint(100)
+        self.writeVint(0)  # Avatar User Level Tier / Purchased Diamonds
+        self.writeVint(100)  # Battle Count
+        self.writeVint(10)  # Win Count
+        self.writeVint(80)  # Lose Count
+        self.writeVint(50)  # Win/Lose Streak
+        self.writeVint(20)  # NPC Win Count
+        self.writeVint(0)  # NPC Lose Count
+        self.writeVint(2)  # Tutorial State | 0 starts first tutorial battle
+        self.writeVint(12)
         self.writeVint(0)
         self.writeVint(0)
+        self.writeString()
         self.writeVint(0)
         self.writeVint(0)
-        self.writeVint(0)
-        self.writeVint(0)
-        self.writeVint(0)
-        # Skip the built-in first-time tutorial by reporting a step after the
-        # final entry from assets/csv_client/tutorial.csv.
-        self.writeVint(19)
-        self.writeVint(self.timestamp)
+        self.writeVint(1)
         DataBase.replaceValue(self, 'online', 2)
         config = open('config.json', 'r')
         content = config.read()
