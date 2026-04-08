@@ -3,6 +3,7 @@ from Client.Login.LoginMessage import LoginMessage
 from Client.KeepAliveMessage import KeepAliveMessage
 from Client.AccountIdentifiersMessage import AccountIdentifiersMessage
 from Client.ClientMessage30000 import ClientMessage30000
+from Client.SetDeviceTokenMessage import SetDeviceTokenMessage
 from Client.Battle.GoHomeFromOfflinePractiseMessage import GoHomeFromOfflinePractiseMessage
 from Client.Home.AskProfileMessage import AskProfileMessage
 from Client.AnalyticsEventMessage import AnalyticsEventMessage
@@ -64,6 +65,7 @@ packets = {
     10108: KeepAliveMessage,
     10110: AnalyticsEventMessage,
     10111: AccountIdentifiersMessage,
+    10113: SetDeviceTokenMessage,
     30000: ClientMessage30000,
     10212: SetNameMessage,
     14102: EndClientTurn,
