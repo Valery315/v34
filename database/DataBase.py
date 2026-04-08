@@ -193,6 +193,14 @@ class DataBase:
                 (account_identifiers, self.player.token),
             )
             conn.commit()
+
+    def deleteAccountByToken(self, token):
+        if not token:
+            return
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM plrs WHERE token=?", (token,))
+            conn.commit()
     def getSuggestions(self):
         self.conn = sql.connect("database/Player/plr.db")
         self.cur = self.conn.cursor()
