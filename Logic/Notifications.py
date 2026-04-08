@@ -10,22 +10,29 @@ class Notifications(Writer):
         super().__init__(client)
         self.timestamp = int(time.time())
 
-    def _get_notifications(self):
-        if isinstance(self.player.notifications, dict):
-            return self.player.notifications
-        if not self.player.notifications:
+    @staticmethod
+    def _get_notifications(owner):
+        player = getattr(owner, "player", owner)
+        notifications = getattr(player, "notifications", {})
+
+        if isinstance(notifications, dict):
+            return notifications
+        if not notifications:
             return {}
-        return json.loads(self.player.notifications)
+        return json.loads(notifications)
 
-    def GetNotifCount(self):
-        return len(self._get_notifications())
+    @staticmethod
+    def GetNotifCount(owner):
+        return len(Notifications._get_notifications(owner))
 
-    def GetNotifByIndex(self, index):
-        return self._get_notifications().get(str(index))
+    @staticmethod
+    def GetNotifByIndex(owner, index):
+        return Notifications._get_notifications(owner).get(str(index))
 
-    def UpdateNotifData(self, index):
-        notifications = self._get_notifications()
+    @staticmethod
+    def UpdateNotifData(owner, index):
+        notifications = Notifications._get_notifications(owner)
         if str(index) in notifications:
             notifications[str(index)]['Read'] = True
-        self.player.notifications = json.dumps(notifications)
-        DataBase.replaceValue(self, "notifications", json.dumps(notifications))
+        owner.player.notifications = json.dumps(notifications)
+        DataBase.replaceValue(owner, "notifications", json.dumps(notifications))
