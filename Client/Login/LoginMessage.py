@@ -6,6 +6,7 @@ from Server.Login.LoginOkMessage import LoginOkMessage
 from Server.Home.OwnHomeDataMessage import OwnHomeDataMessage
 from Server.Login.LoginFailedMessage import LoginFailedMessage
 from Utils.Helpers import Helpers
+from Utils.Network import is_internal_proxy_ip
 from database.DataBase import DataBase
 from Server.Club.MyAllianceMessage import MyAllianceMessage
 from Server.Club.AllianceStreamMessage import AllianceStreamMessage
@@ -92,9 +93,12 @@ class LoginMessage(BSMessageReader):
             
     def get_region_by_ip(self, ip_address):
         """Метод для определения региона по IP"""
+        if not ip_address or is_internal_proxy_ip(ip_address):
+            return 'Unknown'
+
         try:
             url = f'http://ip-api.com/json/{ip_address}'
-            response = requests.get(url)
+            response = requests.get(url, timeout=3)
             data = response.json()
             if data.get('status') == 'fail':
                 return 'Unknown'

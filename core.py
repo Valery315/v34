@@ -10,6 +10,7 @@ from Logic.Player import Players
 from Logic.LogicMessageFactory import packets
 from Utils.Config import Config
 from Utils.Helpers import Helpers
+from Utils.Network import is_internal_proxy_ip
 from shared import connected_ips
 
 addr = {}
@@ -89,6 +90,8 @@ class Server:
             except Exception as e:
                 log_info(f"Ошибка при приёме подключения: {e}")
                 continue
+            client_ip = address[0]
+            enforce_ip_limits = not is_internal_proxy_ip(client_ip)
             with addr_lock:
                 if Server.ThreadCount >= self.MAX_THREADS:
                     if time.time() - self.last_warning_time > 10:
@@ -97,28 +100,30 @@ class Server:
                     client.close()
                     continue
 
-                self.log_connection(address[0])
+                self.log_connection(client_ip)
 
-                if address[0] in self.blocked_ips:
-                    if address[0] not in self.reported_blocked_ips:
-                        log_info(f"[AntiDDoS] Блокировка IP {address[0]}")
-                        self.log_blocked_ip(address[0])
-                        self.reported_blocked_ips.add(address[0])
+                if enforce_ip_limits and client_ip in self.blocked_ips:
+                    if client_ip not in self.reported_blocked_ips:
+                        log_info(f"[AntiDDoS] Блокировка IP {client_ip}")
+                        self.log_blocked_ip(client_ip)
+                        self.reported_blocked_ips.add(client_ip)
                     client.close()
                     continue
 
-                addr[address[0]] = addr.get(address[0], 0) + 1
+                if enforce_ip_limits:
+                    addr[client_ip] = addr.get(client_ip, 0) + 1
 
-                if addr[address[0]] >= 22:
-                    if address[0] not in self.blocked_ips:
-                        log_info(f"[AntiDDoS] Включена защита от IP: {address[0]}")
-                        self.blocked_ips.add(address[0])
-                        self.update_blocked_clients(address[0])
-                    client.close()
-                else:
-                    connected_ips.add(address[0])
-                    ClientThread(client, address, self).start()
-                    Server.ThreadCount += 1
+                    if addr[client_ip] >= 22:
+                        if client_ip not in self.blocked_ips:
+                            log_info(f"[AntiDDoS] Включена защита от IP: {client_ip}")
+                            self.blocked_ips.add(client_ip)
+                            self.update_blocked_clients(client_ip)
+                        client.close()
+                        continue
+
+                connected_ips.add(client_ip)
+                ClientThread(client, address, self).start()
+                Server.ThreadCount += 1
                     
     def clear_connected_ips(self):
         with open('JSON/ConnectedIP.json', 'w') as log_file:
@@ -148,6 +153,9 @@ class Server:
             log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - Блокировка IP: {ip}\n")
 
     def update_blocked_clients(self, ip):
+        if is_internal_proxy_ip(ip):
+            return
+
         with open('config.json', 'r') as config_file:
             settings = json.load(config_file)
         
@@ -212,7 +220,10 @@ class ClientThread(Thread):
                     self.packet_count += 1
 
                     if time.time() - self.last_packet_time >= 1:
-                        if self.bytes_received_in_last_second > self.MAX_BYTES_PER_SECOND:
+                        if (
+                            not is_internal_proxy_ip(client_ip)
+                            and self.bytes_received_in_last_second > self.MAX_BYTES_PER_SECOND
+                        ):
                             log_info(f"[AntiDDoS] IP {client_ip} Превысил лимит, блокировка...")
                             self.server.blocked_ips.add(client_ip)
                             self.server.update_blocked_clients(client_ip)

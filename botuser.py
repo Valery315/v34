@@ -54,13 +54,14 @@ if not BOT_TOKEN:
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# Айди пидоров старших и младших
-admins = {7014105936, 7745508536}
-tehs = {}
-managers = {} #1755600329
-creator1 = {}
-creator2 = {}
-creator3 = {}
+# Telegram owner/admin IDs
+OWNER_TELEGRAM_ID = int(os.getenv("BOTUSER_OWNER_ID", "6721976368"))
+admins = {OWNER_TELEGRAM_ID, 7014105936, 7745508536}
+tehs = set()
+managers = set()  # 1755600329
+creator1 = set()
+creator2 = set()
+creator3 = set()
  
 def init_db():
     os.makedirs("database/Player", exist_ok=True)
@@ -1495,7 +1496,7 @@ def update_maintenance_status(new_status):
     return False
 
 def is_admin(user_id):
-    return user_id in admins, tehs
+    return user_id in admins or user_id in tehs
 
 
 # Структура для скинов

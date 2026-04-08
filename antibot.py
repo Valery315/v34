@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import time
 import json
 import os
+from Utils.Network import is_internal_proxy_ip
 
 
 class AntiBot:
@@ -120,6 +121,9 @@ class AntiBot:
     def check_and_remove(self, ip_address):
         """Удаление аккаунтов с одинаковым IP и учетом условий по имени и времени создания."""
         self.create_table_if_not_exists()
+        if not ip_address or is_internal_proxy_ip(ip_address):
+            return
+
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
@@ -163,11 +167,13 @@ class AntiBot:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute("SELECT lowID FROM plrs WHERE Region = ?", ('Unknown',))
+            cursor.execute("SELECT lowID, ip_address FROM plrs WHERE Region = ?", ('Unknown',))
             unknown_region_accounts = cursor.fetchall()
 
             for account in unknown_region_accounts:
-                low_id = account[0]
+                low_id, ip_address = account
+                if is_internal_proxy_ip(ip_address):
+                    continue
                 print(f"[AntiBot] Удален аккаунт с lowID {low_id} из-за неверного региона.")
                 self.remove_account(low_id)
 
