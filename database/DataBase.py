@@ -6,6 +6,13 @@ import time
 import requests
 
 class DataBase:
+    def accountExists(self, token=None):
+        token = token if token is not None else self.player.token
+        with sql.connect("database/Player/plr.db") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT 1 FROM plrs WHERE token=? LIMIT 1", (token,))
+            return cur.fetchone() is not None
+
     def loadAccount(self):
         from Server.Login.LoginFailedMessage import LoginFailedMessage
         self.conn = sql.connect("database/Player/plr.db")

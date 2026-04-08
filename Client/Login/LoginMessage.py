@@ -29,6 +29,17 @@ class LoginMessage(BSMessageReader):
         self.minor = self.read_int()
         self.build = self.read_int()
 
+    def create_fresh_account(self):
+        plrsinfo = "database/Player/plr.db"
+        if os.path.exists(plrsinfo):
+            self.player.low_id = Helpers.randomID(self)
+        else:
+            self.player.low_id = 2
+
+        self.player.token = Helpers().randomStringDigits()
+        self.player.high_id = 0
+        DataBase.createAccount(self)
+
     def process(self):
         if self.major != 29 or self.major >= 35:
             self.player.err_code = 8
@@ -62,18 +73,14 @@ class LoginMessage(BSMessageReader):
         
         # Создание нового аккаунта
         if self.player.low_id == 0:
-            plrsinfo = "database/Player/plr.db"
-            if os.path.exists(plrsinfo):
-                self.player.low_id = Helpers.randomID(self)
-            else:
-                self.player.low_id = 2
-            self.player.token = Helpers().randomStringDigits()
-            self.player.high_id = 0
-            DataBase.createAccount(self)
+            self.create_fresh_account()
 
         
         # Проверка существующего аккаунта
         if self.player.low_id >= 2:
+            if not DataBase.accountExists(self):
+                self.create_fresh_account()
+
             if not DataBase.loadAccount(self):
                 return
 
